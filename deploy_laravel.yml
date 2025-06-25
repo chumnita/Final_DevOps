@@ -1,0 +1,34 @@
+---
+- name: Deploy Laravel App in Web Pod
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: "/mnt/c/Users/CH_NITA/Documents/FinalExam_DevOps/terrain-booking/venv/bin/python3"
+  tasks:
+    - name: Exec into Laravel web container and pull latest code
+      kubernetes.core.k8s_exec:
+        namespace: default
+        pod: laravel-mysql-deployment-867df69ccc-p25qb
+        container: laravel-web
+        command: git pull
+
+    - name: Install PHP dependencies using Composer
+      kubernetes.core.k8s_exec:
+        namespace: default
+        pod: laravel-mysql-deployment-867df69ccc-p25qb
+        container: laravel-web
+        command: composer install
+
+    - name: Install JS dependencies using NPM
+      kubernetes.core.k8s_exec:
+        namespace: default
+        pod: laravel-mysql-deployment-867df69ccc-p25qb
+        container: laravel-web
+        command: npm install
+
+    - name: Run Laravel tests with SQLite
+      kubernetes.core.k8s_exec:
+        namespace: default
+        pod: laravel-mysql-deployment-867df69ccc-p25qb
+        container: laravel-web
+        command: php artisan test
