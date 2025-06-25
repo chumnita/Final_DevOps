@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-app
+  template:
+    metadata:
+      labels:
+        app: laravel-app
+    spec:
+      containers:
+        - name: laravel-web
+          image: php:8.2-apache
+          ports:
+            - containerPort: 8080
+            - containerPort: 22
+          volumeMounts:
+            - name: laravel-storage
+              mountPath: /var/www/html
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apt-get update && apt-get install -y git unzip curl zip nginx php php-mysql php-mbstring php-xml php-curl php-zip php-bcmath &&
+              git clone https://github.com/chumnita/Final_DevOps.git /var/www/html &&
+              cd /var/www/html &&
+              cd terrain-booking &&
+              cp .env.example .env &&
+              composer install &&
+              php artisan key:generate &&
+              apache2-foreground
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_DATABASE
+              value: "chumnita-db"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "Hello@123"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: laravel-storage
+          emptyDir: {}
+        - name: mysql-storage
+          emptyDir: {}
+
